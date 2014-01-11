@@ -1,7 +1,7 @@
 {
   "name": "adt-simple",
   "version": "0.1.0",
-  "description": "Algebraic data types for JavaScript",
+  "description": "Algebraic data types for JavaScript using Sweet.js macros",
   "main": "./adt-simple.js",
   "scripts": {
     "test": "grunt test"
@@ -17,16 +17,18 @@
     "data",
     "types",
     "functional",
+    "macro",
     "macros",
     "sweet",
-    "sweet.js"
+    "sweet.js",
+    "sweet-macros"
   ],
   "author": "Nathan Faubion <nathan@n-son.com>",
   "license": "MIT",
   "readmeFilename": "README.md",
   "devDependencies": {
     "grunt": "~0.4.1",
-    "sweet.js": "~0.3.0",
+    "sweet.js": "~0.4.0",
     "chai": "~1.8.0",
     "grunt-mocha-test": "~0.7.0",
     "grunt-contrib-uglify": "~0.2.7"
