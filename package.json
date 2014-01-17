@@ -1,6 +1,6 @@
 {
   "name": "adt-simple",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Algebraic data types for JavaScript using Sweet.js macros",
   "main": "./adt-simple.js",
   "scripts": {
