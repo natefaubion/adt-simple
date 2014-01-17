@@ -55,7 +55,8 @@ module.exports = function(grunt) {
     if (!moduleCtx) moduleCtx = sweet.loadModule(macro);
 
     return sweet.compile(test + file, {
-      modules: [moduleCtx]
+      modules: [moduleCtx],
+      readableNames: true
     }).code;
   }
 
