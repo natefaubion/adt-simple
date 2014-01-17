@@ -37,8 +37,8 @@ SingletonVal.value === 42;
 
 // Positional fields
 var tup = Tuple(1, 2);
-tup._1 === 1;
-tup._2 === 2;
+tup[0] === 1;
+tup[1] === 2;
 
 // Named fields
 var pete = Employee('Peter Gibbons', 85000);
@@ -283,7 +283,7 @@ data Foo(*) deriving Clone
 var foo1 = Foo(1);
 var foo2 = foo1.clone();
 
-foo1 !== foo2 && foo2._1 === 1;
+foo1 !== foo2 && foo2[0] === 1;
 ```
 
 Like with `Eq`, `Clone` copies by references anything without a `clone` method.
