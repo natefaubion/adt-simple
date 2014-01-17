@@ -31,7 +31,7 @@ describe 'Eq' {
   it 'should compare native values by reference' {
     var a = Test([1, 2]);
     var b = Test([1, 2]);
-    var c = Test(a._1);
+    var c = Test(a[0]);
 
     test 'failure' { !a.equals(b) }
     test 'success' { a.equals(c)  }
@@ -79,7 +79,7 @@ describe 'Clone' {
     var a = Test(1);
     var oldclone = Clone.nativeClone;
     Clone.nativeClone = function() { return 'foo' };
-    test 'success' { a.clone()._1 === 'foo' }
+    test 'success' { a.clone()[0] === 'foo' }
     Clone.nativeClone = oldclone;
   }
 }

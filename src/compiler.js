@@ -65,8 +65,8 @@ function compileConstructors(tmpls) {
 
 function compileRecord(tmpl) {
   var args = tmpl.fields.reduce(function(acc, f) {
-    f.stx = [makeIdent(f.name, here)];
-    return acc.concat(f.stx);
+    f.arg = [makeIdent(tmpl.positional ? '_' + f.name : f.name, here)];
+    return acc.concat(f.arg);
   }, []);
 
   var constraints = tmpl.fields.reduce(function(stx, f) {
@@ -80,6 +80,11 @@ function compileRecord(tmpl) {
   var fields = tmpl.fields.reduce(function(stx, f) {
     return stx.concat(compileField(f, tmpl));
   }, []);
+
+  if (tmpl.positional) {
+    letstx $ctrLength = [makeValue(tmpl.fields.length, here)];
+    fields = fields.concat(#{ this.length = $ctrLength; });
+  }; // TODO: Why do I need this for letstx?
 
   letstx $ctrName = [makeIdent(tmpl.name, here)];
   letstx $ctrArgs ... = args;
@@ -135,10 +140,13 @@ function compileExport(tmpls, derived) {
 }
 
 function compileField(field, record) {
-  letstx $fieldName = field.stx;
+  letstx $fieldArg = field.arg;
+  letstx $fieldName = record.positional
+    ? [makeKeyword('this', here), makeDelim('[]', [makeValue(field.name, here)], here)]
+    : [makeKeyword('this', here), makePunc('.', here)].concat(field.arg);
   if (field.constraint.type === 'any') {
     return #{
-      this.$fieldName = $fieldName;
+      $fieldName = $fieldArg;
     }
   }
   if (field.constraint.type === 'class') {
@@ -149,7 +157,7 @@ function compileField(field, record) {
     letstx $fieldError = [makeValue('Unexpected type for field: ' + fullName, here)];
     return #{
       if ($fieldCheck ...) {
-        this.$fieldName = $fieldName;
+        $fieldName = $fieldArg;
       } else {
         throw new TypeError($fieldError);
       }
@@ -158,7 +166,7 @@ function compileField(field, record) {
   if (field.constraint.type === 'literal') {
     letstx $fieldCons = field.constraint.ref;
     return #{
-      this.$fieldName = $fieldCons($fieldName);
+      $fieldName = $fieldCons($fieldArg);
     }
   }
 }
@@ -169,47 +177,47 @@ function compileInstanceCheck(cons) {
     switch(name) {
       case 'String': 
         return #{ 
-          typeof $fieldName === 'string' || 
-          Object.prototype.toString.call($fieldName) === '[object String]' 
+          typeof $fieldArg === 'string' || 
+          Object.prototype.toString.call($fieldArg) === '[object String]' 
         }
       case 'Number': 
         return #{ 
-          typeof $fieldName === 'number' ||
-          Object.prototype.toString.call($fieldName) === '[object Number]'
+          typeof $fieldArg === 'number' ||
+          Object.prototype.toString.call($fieldArg) === '[object Number]'
         }
       case 'Boolean': 
         return #{ 
-          typeof $fieldName === 'boolean' ||
-          Object.prototype.toString.call($fieldName) === '[object Boolean]'
+          typeof $fieldArg === 'boolean' ||
+          Object.prototype.toString.call($fieldArg) === '[object Boolean]'
         }
       case 'RegExp': 
         return #{ 
-          Object.prototype.toString.call($fieldName) === '[object RegExp]'
+          Object.prototype.toString.call($fieldArg) === '[object RegExp]'
         }
       case 'Date': 
         return #{ 
-          Object.prototype.toString.call($fieldName) === '[object Date]'
+          Object.prototype.toString.call($fieldArg) === '[object Date]'
         }
       case 'Function': 
         return #{ 
-          Object.prototype.toString.call($fieldName) === '[object Function]'
+          Object.prototype.toString.call($fieldArg) === '[object Function]'
         }
       case 'Array': 
         return #{ 
           Array.isArray
-            ? Array.isArray($fieldName)
-            : Object.prototype.toString.call($fieldName) === '[object Array]'
+            ? Array.isArray($fieldArg)
+            : Object.prototype.toString.call($fieldArg) === '[object Array]'
         }
       case 'Object': 
         return #{ 
-          $fieldName != null && ($fieldName = Object($fieldName))
+          $fieldArg != null && ($fieldArg = Object($fieldArg))
         }
     }
   }
 
   letstx $fieldClass ... = cons.stx;
   return #{
-    $fieldName instanceof $fieldClass ...
+    $fieldArg instanceof $fieldClass ...
   }
 
 }

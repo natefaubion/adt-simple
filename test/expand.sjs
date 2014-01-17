@@ -12,7 +12,7 @@ describe 'Expansion' {
 
     test 'singleton, no value' { Test1 }
     test 'singleton, w/ value' { Test2.value === 'test' }
-    test 'positional' { posTest._1 === 1 && posTest._2 === 2 }
+    test 'positional' { posTest[0] === 1 && posTest[1] === 2 }
     test 'record' { recTest.foo === 3 && recTest.bar === 4 }
   }
 
@@ -29,7 +29,7 @@ describe 'Expansion' {
 
     test 'singleton, no value' { Test1 }
     test 'singleton, w/ value' { Test2.value === 'test' }
-    test 'positional' { posTest._1 === 1 && posTest._2 === 2 }
+    test 'positional' { posTest[0] === 1 && posTest[1] === 2 }
     test 'record' { recTest.foo === 3 && recTest.bar === 4 }
 
     test 'exported on parent' {
@@ -156,7 +156,7 @@ describe 'Expansion' {
             name: 'Test2',
             constructor: Test2,
             prototype: Test2.prototype,
-            fields: ['_1', '_2']
+            fields: ['0', '1']
           },
           {
             name: 'Test3',

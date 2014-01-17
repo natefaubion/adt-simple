@@ -42,8 +42,9 @@ function parsePositional(inp) {
     var inp2 = input(res[1].token.inner);
     return {
       name: unwrapSyntax(res[0]),
+      positional: true,
       fields: commaSeparated(parseConstraint, inp2).map(function(c, i) {
-        return { name: '_' + (i + 1), constraint: c };
+        return { name: i.toString(), constraint: c };
       })
     };
   }

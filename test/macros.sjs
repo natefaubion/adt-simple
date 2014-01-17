@@ -23,4 +23,5 @@ let test = macro {
   rule { $desc { $a:expr } } => {
     assert($a, $desc);
   }
+  rule {} => { test }
 }
