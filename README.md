@@ -386,8 +386,8 @@ union List {
 
 List.prototype.map = function(fn) {
   return this match {
-    Nil => Nil
-    Cons(x, xs) => Cons(fn(x), xs.map(fn))
+    case Nil => Nil
+    case Cons(x, xs) => Cons(fn(x), xs.map(fn))
   }
 }
 ```
