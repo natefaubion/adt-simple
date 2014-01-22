@@ -184,14 +184,23 @@ macro $adt__compile {
       }
     }
     function parseField(inp) {
-      var res = inp.takeAPeek(IDENT, COLON);
-      if (res) {
-        var cons = parseConstraint(inp);
-        if (cons) {
+      var res1 = inp.takeAPeek(IDENT);
+      if (res1) {
+        var res2 = inp.takeAPeek(COLON);
+        if (res2) {
+          var cons = parseConstraint(inp);
+          if (cons) {
+            return {
+              name: unwrapSyntax(res1[0]),
+              constraint: cons
+            };
+          }
+          syntaxError(res2, 'Expected constraint');
+        } else {
           return {
-            name: unwrapSyntax(res[0]),
-            constraint: cons
-          };
+            name: unwrapSyntax(res1[0]),
+            constraint: { type: 'any' }
+          }
         }
       }
     }
@@ -206,7 +215,10 @@ macro $adt__compile {
         if (expr.success && !expr.rest.length) {
           return { type: 'literal', stx: expr.result };
         }
-        throwSyntaxError('adt-simple', 'Unexpected token', expr.success ? expr.rest[0] : res[0]);
+        syntaxError(expr.success ? expr.rest[0] : res[0]);
+      }
+      if (inp.length) {
+        syntaxError(inp.take());
       }
     }
     function parseClassName(inp) {

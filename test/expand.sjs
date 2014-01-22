@@ -5,7 +5,7 @@ describe 'Expansion' {
     data Test1
     data Test2 = 'test'
     data Test3(*, *)
-    data Test4 { foo: *, bar: * }
+    data Test4 { foo: *, bar }
 
     var posTest = Test3(1, 2);
     var recTest = Test4(3, 4);
@@ -21,7 +21,7 @@ describe 'Expansion' {
       Test1,
       Test2 = 'test',
       Test3(*, *),
-      Test4 { foo: *, bar: * }
+      Test4 { foo: *, bar }
     }
 
     var posTest = Test3(1, 2);
