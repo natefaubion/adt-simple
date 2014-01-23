@@ -5,9 +5,11 @@ macro $adt__compile {
     var name = #{ $name };
     var body = #{ $body }[0].token.inner;
     var derivs = #{ $derivs }[0].token.inner;
+    var options = {};
 
     //= letstx.js
     //= utils.js
+    //= options.js
     //= parser.js
     //= compiler.js
 

@@ -200,4 +200,40 @@ describe 'Expansion' {
 
     test 'success' { Foo(42).bar === '42' }
   }
+
+  it 'should support the @scoped pragma' {
+    /* @scoped */
+    union Foo {
+      Bar,
+      Baz
+    }
+
+    test 'success' { Foo.Bar && Foo.Baz }
+    test 'fail 1' { Bar =!= ReferenceError }
+    test 'fail 2' { Baz =!= ReferenceError }
+  }
+
+  it 'should support the @newrequired pragma' {
+    /* @newrequired */
+    data Foo { aaa, bbb }
+    var a = new Foo(1, 2);
+    var b = Foo(1, 2);
+
+    test 'success' { a instanceof Foo }
+    test 'fail' { b === void 0 }
+  }
+
+  it 'should support the @overrideapply pragma' {
+    /* @overrideapply */
+    union Foo {
+      Bar,
+      Baz
+    }
+
+    Foo.apply = function(ctx, args) {
+      return args[0] ? Bar : Baz;
+    };
+
+    test 'success' { Foo(true) === Bar && Foo(false) === Baz }
+  }
 }

@@ -5,6 +5,7 @@ macro $adt__compile {
     var name = #{ $name };
     var body = #{ $body }[0].token.inner;
     var derivs = #{ $derivs }[0].token.inner;
+    var options = {};
 
     let letstx = macro {
       case { $mac $id:ident $punc = $rhs:expr } => {
@@ -125,6 +126,20 @@ macro $adt__compile {
     var cid = 0;
     function makeConstraint() {
       return [makeIdent('c' + (++cid), here)];
+    }
+    var pragmas = {
+      overrideApply: /@overrideapply\b/gmi,
+      newRequired: /@newrequired\b/gmi,
+      scoped: /@scoped\b/gmi
+    };
+    if (ctx[0].token.leadingComments) {
+      ctx[0].token.leadingComments.forEach(function(comment) {
+        Object.keys(pragmas).forEach(function(optName) {
+          if (comment.value.match(pragmas[optName])) {
+            options[optName] = true;
+          }
+        });
+      });
     }
     var T        = parser.Token;
     var EQ       = { type: T.Punctuator, value: '=' };
@@ -275,7 +290,7 @@ macro $adt__compile {
       letstx $ctrs ... = compileConstructors(tmpls);
       letstx $derived ... = derivers.length ? compileDeriving(tmpls, derivers) : [];
       letstx $export ... = compileExport(tmpls, derivers.length);
-      letstx $unwrapped ... = compileUnwrap(tmpls);
+      letstx $unwrapped ... = options.scoped ? [] : compileUnwrap(tmpls);
       if (isData) {
         if (derivers.length) {
           var exp = tmpls[0].fields
@@ -302,12 +317,19 @@ macro $adt__compile {
           }
         }
       } else {
+        var parentBody = [];
+        if (options.overrideApply) {
+          parentBody = #{
+            if ($parentName.apply !== Function.prototype.apply) {
+              return $parentName.apply(this, arguments);
+            }
+          }
+        }
+        letstx $parentBody ... = parentBody;
         return #{
           var $name = function() {
             function $parentName() {
-              if ($parentName.apply !== Function.prototype.apply) {
-                return $parentName.apply(this, arguments);
-              }
+              $parentBody ...
             }
             $ctrs ...
             $derived ...
@@ -344,17 +366,26 @@ macro $adt__compile {
       if (tmpl.positional) {
         letstx $ctrLength = [makeValue(tmpl.fields.length, here)];
         fields = fields.concat(#{ this.length = $ctrLength; });
-      }; 
+      };
       letstx $ctrName = [makeIdent(tmpl.name, here)];
       letstx $ctrArgs ... = args;
+      var ctrBody;
+      if (options.newRequired) {
+        ctrBody = [];
+      } else {
+        ctrBody = #{
+          if (!(this instanceof $ctrName)) {
+            return new $ctrName($ctrArgs (,) ...);
+          }
+        }
+      }
+      letstx $ctrBody ... = ctrBody;
       letstx $ctrFields ... = fields;
       letstx $ctrCons ... = constraints;
       return #{
         $ctrCons ...
         function $ctrName($ctrArgs (,) ...) {
-          if (!(this instanceof $ctrName)) {
-            return new $ctrName($ctrArgs (,) ...);
-          }
+          $ctrBody ...
           $ctrFields ...
         }
       }.concat(isData ? [] : #{
@@ -483,7 +514,7 @@ macro $adt__compile {
     function compileDeriving(tmpls, derivers) {
       var variants = tmpls.reduce(function(stx, tmpl) {
         return stx.concat(compileTemplate(tmpl));
-      }, [])
+      }, []);
       letstx $derivedRef = [makeIdent('derived', here)];
       letstx $nameStr = [makeValue(unwrapSyntax(name), here)];
       letstx $variants ... = variants;

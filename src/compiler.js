@@ -9,7 +9,7 @@ function compile(tmpls, derivers) {
   letstx $ctrs ... = compileConstructors(tmpls);
   letstx $derived ... = derivers.length ? compileDeriving(tmpls, derivers) : [];
   letstx $export ... = compileExport(tmpls, derivers.length);
-  letstx $unwrapped ... = compileUnwrap(tmpls);
+  letstx $unwrapped ... = options.scoped ? [] : compileUnwrap(tmpls);
 
   if (isData) {
     if (derivers.length) {
@@ -37,12 +37,19 @@ function compile(tmpls, derivers) {
       }
     }
   } else {
+    var parentBody = [];
+    if (options.overrideApply) {
+      parentBody = #{
+        if ($parentName.apply !== Function.prototype.apply) {
+          return $parentName.apply(this, arguments);
+        }
+      }
+    }
+    letstx $parentBody ... = parentBody;
     return #{
       var $name = function() {
         function $parentName() {
-          if ($parentName.apply !== Function.prototype.apply) {
-            return $parentName.apply(this, arguments);
-          }
+          $parentBody ...
         }
         $ctrs ...
         $derived ...
@@ -84,18 +91,29 @@ function compileRecord(tmpl) {
   if (tmpl.positional) {
     letstx $ctrLength = [makeValue(tmpl.fields.length, here)];
     fields = fields.concat(#{ this.length = $ctrLength; });
-  }; // TODO: Why do I need this for letstx?
+  };
 
   letstx $ctrName = [makeIdent(tmpl.name, here)];
   letstx $ctrArgs ... = args;
+
+  var ctrBody;
+  if (options.newRequired) {
+    ctrBody = [];
+  } else {
+    ctrBody = #{
+      if (!(this instanceof $ctrName)) {
+        return new $ctrName($ctrArgs (,) ...);
+      }
+    }
+  }
+
+  letstx $ctrBody ... = ctrBody;
   letstx $ctrFields ... = fields;
   letstx $ctrCons ... = constraints;
   return #{
     $ctrCons ...
     function $ctrName($ctrArgs (,) ...) {
-      if (!(this instanceof $ctrName)) {
-        return new $ctrName($ctrArgs (,) ...);
-      }
+      $ctrBody ...
       $ctrFields ...
     }
   }.concat(isData ? [] : #{
@@ -233,7 +251,7 @@ function compileConstraint(cons) {
 function compileDeriving(tmpls, derivers) {
   var variants = tmpls.reduce(function(stx, tmpl) {
     return stx.concat(compileTemplate(tmpl));
-  }, [])
+  }, []);
 
   letstx $derivedRef = [makeIdent('derived', here)];
   letstx $nameStr = [makeValue(unwrapSyntax(name), here)];
