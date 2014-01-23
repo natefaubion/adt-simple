@@ -254,6 +254,54 @@ data Foo(*, *) deriving Log('hello')
 Foo(1, 2).log() // logs: hello Foo(1, 2)
 ```
 
+Compiler Pragmas
+----------------
+
+adt-simple has sensible defaults, but you can also configure the output by
+adding one or more pragma comments before your definition.
+
+```js
+/* @newrequired, @scoped */
+union Foo {
+  Bar,
+  Baz
+}
+```
+
+### `@newrequired`
+
+By default, constructors can be called without a `new` keyword. This pragma
+disables the `instanceof` check that enables this behavior, leaving you with
+a simpler constructor. **Note:** this pragma will conflict with the `Curry`
+deriver.
+
+### `@scoped`
+
+All union variants are unwrapped and put in the outer scope. This pragma
+disables the unwrapping and leaves them scoped to the parent.
+
+### `@overrideapply`
+
+This pragma lets you define a custom `apply` method on the parent constructor,
+which lets you call it as a normal function.
+
+```js
+/* @overrideapply */
+union List {
+  Nil,
+  Cons {
+    head: *,
+    tail: List
+  }
+} deriving ToString
+
+List.apply = function(ctx, args) {
+  // Turn an array into a list
+};
+
+List(1, 2, 3).toString() === 'Cons(1, Cons(2, Cons(3, Nil)))';
+```
+
 ---
 
 ### `Eq`
