@@ -1,3 +1,9 @@
+## 0.1.2 (2014-5-10)
+
+*   Added compiler pragmas to fine tune output
+*   Constructors can have keyword fields
+*   Record fields don't require a contract declaration
+
 ## 0.1.1 (2014-1-16)
 
 *   Changed positional constructors to use array indexing
