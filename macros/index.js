@@ -150,6 +150,7 @@ macro $adt__compile {
     var PARENS   = { type: T.Delimiter,  value: '()' };
     var BRACES   = { type: T.Delimiter,  value: '{}' };
     var IDENT    = { type: T.Identifier };
+    var KEYWORD  = { type: T.Keyword };
     function parse(stx) {
       var inp = input(stx);
       var res = commaSeparated(parseConstructor, inp);
@@ -180,7 +181,7 @@ macro $adt__compile {
           name: unwrapSyntax(res[0]),
           positional: true,
           fields: commaSeparated(parseConstraint, inp2).map(function(c, i) {
-            return { name: i.toString(), constraint: c };
+            return { name: i.toString(), arg: '_' + i.toString(),  constraint: c };
           })
         };
       }
@@ -199,21 +200,25 @@ macro $adt__compile {
       }
     }
     function parseField(inp) {
-      var res1 = inp.takeAPeek(IDENT);
+      var res1 = inp.takeAPeek(IDENT) || inp.takeAPeek(KEYWORD);
       if (res1) {
+        var name = unwrapSyntax(res1[0]);
+        var arg = res1[0].token.type === T.Keyword ? '_' + name : name;
         var res2 = inp.takeAPeek(COLON);
         if (res2) {
           var cons = parseConstraint(inp);
           if (cons) {
             return {
-              name: unwrapSyntax(res1[0]),
+              name: name,
+              arg: arg,
               constraint: cons
             };
           }
           syntaxError(res2, 'Expected constraint');
         } else {
           return {
-            name: unwrapSyntax(res1[0]),
+            name: name,
+            arg: arg,
             constraint: { type: 'any' }
           }
         }
@@ -350,7 +355,7 @@ macro $adt__compile {
     }
     function compileRecord(tmpl) {
       var args = tmpl.fields.reduce(function(acc, f) {
-        f.arg = [makeIdent(tmpl.positional ? '_' + f.name : f.name, here)];
+        f.arg = [makeIdent(f.arg, here)];
         return acc.concat(f.arg);
       }, []);
       var constraints = tmpl.fields.reduce(function(stx, f) {
@@ -429,7 +434,7 @@ macro $adt__compile {
       letstx $fieldArg = field.arg;
       letstx $fieldName = record.positional
         ? [makeKeyword('this', here), makeDelim('[]', [makeValue(field.name, here)], here)]
-        : [makeKeyword('this', here), makePunc('.', here)].concat(field.arg);
+        : [makeKeyword('this', here), makePunc('.', here), makeIdent(field.name, here)];
       if (field.constraint.type === 'any') {
         return #{
           $fieldName = $fieldArg;

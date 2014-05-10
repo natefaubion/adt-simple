@@ -10,6 +10,7 @@ var WILDCARD = { type: T.Punctuator, value: '*' };
 var PARENS   = { type: T.Delimiter,  value: '()' };
 var BRACES   = { type: T.Delimiter,  value: '{}' };
 var IDENT    = { type: T.Identifier };
+var KEYWORD  = { type: T.Keyword };
 
 function parse(stx) {
   var inp = input(stx);
@@ -44,7 +45,7 @@ function parsePositional(inp) {
       name: unwrapSyntax(res[0]),
       positional: true,
       fields: commaSeparated(parseConstraint, inp2).map(function(c, i) {
-        return { name: i.toString(), constraint: c };
+        return { name: i.toString(), arg: '_' + i.toString(),  constraint: c };
       })
     };
   }
@@ -65,21 +66,25 @@ function parseSingleton(inp) {
 }
 
 function parseField(inp) {
-  var res1 = inp.takeAPeek(IDENT);
+  var res1 = inp.takeAPeek(IDENT) || inp.takeAPeek(KEYWORD);
   if (res1) {
+    var name = unwrapSyntax(res1[0]);
+    var arg = res1[0].token.type === T.Keyword ? '_' + name : name;
     var res2 = inp.takeAPeek(COLON);
     if (res2) {
       var cons = parseConstraint(inp);
       if (cons) {
         return {
-          name: unwrapSyntax(res1[0]),
+          name: name,
+          arg: arg,
           constraint: cons
         };
       }
       syntaxError(res2, 'Expected constraint');
     } else {
       return {
-        name: unwrapSyntax(res1[0]),
+        name: name,
+        arg: arg,
         constraint: { type: 'any' }
       }
     }

@@ -236,4 +236,11 @@ describe 'Expansion' {
 
     test 'success' { Foo(true) === Bar && Foo(false) === Baz }
   }
+
+  it 'should support keyword properties' {
+    data Foo { case, default, class }
+    var a = Foo(1, 2, 3);
+
+    test 'success' { a.case === 1 && a.default === 2 && a.class === 3 }
+  }
 }

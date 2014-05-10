@@ -72,7 +72,7 @@ function compileConstructors(tmpls) {
 
 function compileRecord(tmpl) {
   var args = tmpl.fields.reduce(function(acc, f) {
-    f.arg = [makeIdent(tmpl.positional ? '_' + f.name : f.name, here)];
+    f.arg = [makeIdent(f.arg, here)];
     return acc.concat(f.arg);
   }, []);
 
@@ -161,7 +161,7 @@ function compileField(field, record) {
   letstx $fieldArg = field.arg;
   letstx $fieldName = record.positional
     ? [makeKeyword('this', here), makeDelim('[]', [makeValue(field.name, here)], here)]
-    : [makeKeyword('this', here), makePunc('.', here)].concat(field.arg);
+    : [makeKeyword('this', here), makePunc('.', here), makeIdent(field.name, here)];
   if (field.constraint.type === 'any') {
     return #{
       $fieldName = $fieldArg;
