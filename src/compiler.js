@@ -90,7 +90,6 @@ function compileRecord(tmpl) {
 
   if (tmpl.positional) {
     letstx $ctrLength = [makeValue(tmpl.fields.length, here)];
-    fields = fields.concat(#{ this.length = $ctrLength; });
   };
 
   letstx $ctrName = [makeIdent(tmpl.name, here)];
@@ -119,6 +118,8 @@ function compileRecord(tmpl) {
   }.concat(isData ? [] : #{
     $ctrName.prototype = new $parentName();
     $ctrName.prototype.constructor = $ctrName;
+  }).concat(!tmpl.positional ? [] : #{
+    $ctrName.prototype.length = $ctrLength;
   });
 }
 
