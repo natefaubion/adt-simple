@@ -433,9 +433,9 @@ union List {
 } deriving Extractor
 
 List.prototype.map = function(fn) {
-  return this match {
-    case Nil => Nil
-    case Cons(x, xs) => Cons(fn(x), xs.map(fn))
+  return match this {
+    Nil => Nil
+    Cons(x, xs) => Cons(fn(x), xs.map(fn))
   }
 }
 ```
