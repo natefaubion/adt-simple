@@ -169,14 +169,14 @@ macro $adt__compile {
       if (res) {
         return {
           name: unwrapSyntax(res[0]),
-          fields: commaSeparated(parseField, input(res[1].token.inner))
+          fields: commaSeparated(parseField, input(res[1].expose().token.inner))
         };
       }
     }
     function parsePositional(inp) {
       var res = inp.takeAPeek(IDENT, PARENS);
       if (res) {
-        var inp2 = input(res[1].token.inner);
+        var inp2 = input(res[1].expose().token.inner);
         return {
           name: unwrapSyntax(res[0]),
           positional: true,
@@ -263,7 +263,7 @@ macro $adt__compile {
     }
     function parseDerivers(stx) {
       return stx.map(function(delim) {
-        return delim.token.inner;
+        return delim.expose().token.inner;
       });
     }
     function commaSeparated(parser, inp, cb) {

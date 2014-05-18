@@ -243,4 +243,16 @@ describe 'Expansion' {
 
     test 'success' { a.case === 1 && a.default === 2 && a.class === 3 }
   }
+
+  it 'should support other ADTs as constraints' {
+    data Foo(*)
+    data Bar { a: Foo }
+    union Baz {
+      A { a: Foo }
+    }
+
+    test 'data'    { Bar(Foo(1)) }
+    test 'union'   { A(Foo(1)) }
+    test 'failure' { A(42) =!= TypeError }
+  }
 }
