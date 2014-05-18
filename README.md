@@ -434,7 +434,7 @@ union List {
 
 List.prototype.map = function(fn) {
   return match this {
-    Nil => Nil
+    Nil => Nil,
     Cons(x, xs) => Cons(fn(x), xs.map(fn))
   }
 }
