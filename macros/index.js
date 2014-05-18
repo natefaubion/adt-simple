@@ -326,7 +326,7 @@ macro $adt__compile {
         if (options.overrideApply) {
           parentBody = #{
             if ($parentName.apply !== Function.prototype.apply) {
-              return $parentName.apply(this, arguments);
+              return $parentName.apply.apply(this, arguments);
             }
           }
         }
