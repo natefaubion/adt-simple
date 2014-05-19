@@ -1,3 +1,7 @@
+## 0.1.3 (2014-5-18)
+
+*   Fixed bug where ADTs couldn't be used as constraints
+
 ## 0.1.2 (2014-5-10)
 
 *   Added compiler pragmas to fine tune output

@@ -2,7 +2,7 @@
  * adt-simple
  * ----------
  * author: Nathan Faubion <nathan@n-son.com>
- * version: 0.1.1
+ * version: 0.1.3
  * license: MIT
  */
 
